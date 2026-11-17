@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: files
 name: BrainBro
-version: "1.0.0"
+version: "1.0.0-1"
 tagline: A self-hosted second brain. Drop it now, sort it later
 icon: https://raw.githubusercontent.com/TheBrainBro/brainbro-umbrel-app/main/brainbro-app/icon.svg
 description: >-

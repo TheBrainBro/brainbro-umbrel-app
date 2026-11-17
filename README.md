@@ -38,7 +38,9 @@ Images are pinned to a version and its multi-arch digest (`linux/amd64`, `linux/
 2. In `brainbro-app/docker-compose.yml`, change both images to `X.Y.Z@sha256:<digest>`.
 3. In `brainbro-app/umbrel-app.yml`, change `version` and `releaseNotes`.
 
-umbrelOS offers the update once the change is on `main`. On start, the `migrate` service backs
+umbrelOS offers the update once the change is on `main`: it compares `version` with the
+installed one. A change to the package alone, with the same BrainBro version, adds a suffix
+(`1.0.0-1`, `1.0.0-2`...) so it is offered too. On start, the `migrate` service backs
 up the database before any pending migration and runs it.
 
 ## License

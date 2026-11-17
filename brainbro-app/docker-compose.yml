@@ -60,6 +60,9 @@ services:
     image: redis:8.0-alpine@sha256:5f61955be8ab2ccee9372b84ae4d4da2e2b156f87281e3f218544055e7ee04d4
     restart: on-failure
     user: "1000:1000"
+    depends_on:
+      permissions:
+        condition: service_completed_successfully
     volumes:
       - ${APP_DATA_DIR}/data/redis:/data
     healthcheck:
@@ -73,6 +76,21 @@ services:
     image: ghcr.io/thebrainbro/brainbro-embedder:1.0.0@sha256:f4e098808efd2b1eb2057f0af6f5742cbcf845cfda7e794b4483cc82666159f4
     restart: on-failure
 
+  # One-shot, as root: the app and redis run as 1000:1000, but the folders
+  # they write to aren't always theirs on umbrelOS (uploads failed with
+  # "Permission denied: /data/storage/avatars"). Only what isn't theirs is
+  # changed, so it's quick on every start.
+  permissions:
+    image: ghcr.io/thebrainbro/brainbro:1.0.0@sha256:2d98c0455aa8e9ab927ccae216da4bd5feffcdd96b35a2dcc297a32d68dad963
+    user: "0:0"
+    restart: "no"
+    command: ["find", "/data", "!", "-user", "1000", "-exec", "chown", "1000:1000", "{}", "+"]
+    volumes:
+      - ${APP_DATA_DIR}/data/storage:/data/storage
+      - ${APP_DATA_DIR}/data/backups:/data/backups
+      - ${APP_DATA_DIR}/data/exports:/data/exports
+      - ${APP_DATA_DIR}/data/redis:/data/redis
+
   # One-shot: backup if needed, migrate, ensure the admin. api/worker wait for it.
   migrate:
     <<: *app
@@ -81,6 +99,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      permissions:
+        condition: service_completed_successfully
 
   api:
     <<: *app
