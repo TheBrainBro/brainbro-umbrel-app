@@ -4,7 +4,7 @@
 # (<app-id>_<service>_1), as Umbrel apps share a network.
 
 x-app: &app
-  image: ghcr.io/thebrainbro/brainbro:1.0.0@sha256:2d98c0455aa8e9ab927ccae216da4bd5feffcdd96b35a2dcc297a32d68dad963
+  image: ghcr.io/thebrainbro/brainbro:1.1.0@sha256:8ceced20f8fd376efc4edc8231f1587b1221eff8cd2a3ed0898fc32db750147f
   environment:
     ENVIRONMENT: production
     SECRET_KEY: ${APP_BRAINBRO_SECRET_KEY}
@@ -73,7 +73,7 @@ services:
 
   # Semantic search, with the model built into the image. ~600 MB of memory.
   embedder:
-    image: ghcr.io/thebrainbro/brainbro-embedder:1.0.0@sha256:f4e098808efd2b1eb2057f0af6f5742cbcf845cfda7e794b4483cc82666159f4
+    image: ghcr.io/thebrainbro/brainbro-embedder:1.1.0@sha256:6d6611907e87fa72ab82d0378d78d7894562df82f8b34aa668759bee8b9b60ef
     restart: on-failure
 
   # One-shot, as root: the app and redis run as 1000:1000, but the folders
@@ -81,7 +81,7 @@ services:
   # "Permission denied: /data/storage/avatars"). Only what isn't theirs is
   # changed, so it's quick on every start.
   permissions:
-    image: ghcr.io/thebrainbro/brainbro:1.0.0@sha256:2d98c0455aa8e9ab927ccae216da4bd5feffcdd96b35a2dcc297a32d68dad963
+    image: ghcr.io/thebrainbro/brainbro:1.1.0@sha256:8ceced20f8fd376efc4edc8231f1587b1221eff8cd2a3ed0898fc32db750147f
     user: "0:0"
     restart: "no"
     command: ["find", "/data", "!", "-user", "1000", "-exec", "chown", "1000:1000", "{}", "+"]

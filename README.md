@@ -11,20 +11,8 @@ The [Community App Store](https://github.com/getumbrel/umbrel-community-app-stor
 4. Open BrainBro and sign in as `umbrel`, with the password shown on the app's page in
    umbrelOS.
 
-Umbrel's own sign-in is off for this app: BrainBro has its own, and the API, MCP and the
-Telegram webhook must be reachable by clients that aren't browsers.
-
-## What is in it
-
-| Path | |
-|---|---|
-| `umbrel-app-store.yml` | The store: its id (`brainbro`, the prefix of every app id) and name. |
-| `brainbro-app/umbrel-app.yml` | The listing umbrelOS shows. |
-| `brainbro-app/docker-compose.yml` | The services, from `docker-compose.production.yml` in the BrainBro repository. |
-| `brainbro-app/exports.sh` | Secrets derived from the device seed (`SECRET_KEY`, the database password). |
-| `brainbro-app/data/` | The folders the services keep their data in, under the app's data directory. |
-
-Images are pinned to a version and its multi-arch digest (`linux/amd64`, `linux/arm64`).
+To reach it from outside your network, for example through a Cloudflare Tunnel, see
+[Public address](https://github.com/TheBrainBro/brainbro/blob/main/docs/deployment.md#public-address).
 
 ## Updating to a new BrainBro release
 
@@ -35,13 +23,13 @@ Images are pinned to a version and its multi-arch digest (`linux/amd64`, `linux/
    docker buildx imagetools inspect ghcr.io/thebrainbro/brainbro-embedder:X.Y.Z
    ```
 
-2. In `brainbro-app/docker-compose.yml`, change both images to `X.Y.Z@sha256:<digest>`.
-3. In `brainbro-app/umbrel-app.yml`, change `version` and `releaseNotes`.
+2. In `brainbro-app/docker-compose.yml`, pin every BrainBro image (`x-app`, `permissions`
+   and `embedder`) to `X.Y.Z@sha256:<digest>`.
+3. In `brainbro-app/umbrel-app.yml`, change `version`.
 
 umbrelOS offers the update once the change is on `main`: it compares `version` with the
 installed one. A change to the package alone, with the same BrainBro version, adds a suffix
-(`1.0.0-1`, `1.0.0-2`...) so it is offered too. On start, the `migrate` service backs
-up the database before any pending migration and runs it.
+(`1.0.0-1`, `1.0.0-2`...) so it is offered too.
 
 ## License
 

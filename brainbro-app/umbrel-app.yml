@@ -4,7 +4,7 @@ storage:
   dataRoot: data
 category: files
 name: BrainBro
-version: "1.0.0-1"
+version: "1.1.0"
 tagline: A self-hosted second brain. Drop it now, sort it later
 icon: https://raw.githubusercontent.com/TheBrainBro/brainbro-umbrel-app/main/brainbro-app/icon.svg
 description: >-
@@ -26,7 +26,7 @@ description: >-
 
   - Publish a note as a public page, or a collection as a blog
 
-  - Import an Obsidian vault, export everything as Markdown and files
+  - Import an Obsidian vault or another BrainBro, export everything as Markdown and files
 
 
   Sign in with the username and password shown on this page. To add other people, create
