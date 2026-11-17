@@ -1,0 +1,109 @@
+# BrainBro on umbrelOS. Mirrors docker-compose.production.yml in the BrainBro
+# repository, adapted to Umbrel: data in bind mounts under ${APP_DATA_DIR},
+# secrets from exports.sh, and services addressed by container name
+# (<app-id>_<service>_1), as Umbrel apps share a network.
+
+x-app: &app
+  image: ghcr.io/thebrainbro/brainbro:1.0.0@sha256:2d98c0455aa8e9ab927ccae216da4bd5feffcdd96b35a2dcc297a32d68dad963
+  environment:
+    ENVIRONMENT: production
+    SECRET_KEY: ${APP_BRAINBRO_SECRET_KEY}
+    # The names umbrelOS answers to on the local network.
+    APP_HOSTNAMES: ${DEVICE_DOMAIN_NAME},${DEVICE_HOSTNAME}
+    # Plain HTTP on the local network: Secure cookies would never be sent.
+    APP_HTTPS: "false"
+    # Umbrel's app gateway replaces X-Forwarded-For with the client's address,
+    # as Caddy does, so rate limits count per client and not per gateway.
+    APP_PROXY: caddy
+    POSTGRES_HOST: brainbro-app_postgres_1
+    POSTGRES_PORT: "5432"
+    POSTGRES_DB: brain
+    POSTGRES_USER: brain
+    POSTGRES_PASSWORD: ${APP_BRAINBRO_POSTGRES_PASSWORD}
+    REDIS_URL: redis://brainbro-app_redis_1:6379/0
+    EMBEDDER_URL: http://brainbro-app_embedder_1:8000
+    # The first user, created on the first start only. Umbrel shows the
+    # password on the app's page.
+    ADMIN_USERNAME: umbrel
+    ADMIN_PASSWORD: ${APP_PASSWORD}
+  volumes:
+    - ${APP_DATA_DIR}/data/storage:/data/storage
+    - ${APP_DATA_DIR}/data/backups:/data/backups
+    - ${APP_DATA_DIR}/data/exports:/data/exports
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: brainbro-app_api_1
+      APP_PORT: 8000
+      # BrainBro has its own sign-in. Without this, Umbrel's would also sit in
+      # front of the API, MCP and the Telegram webhook, which aren't browsers.
+      PROXY_AUTH_ADD: "false"
+
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg17@sha256:b513c48566e4777cd3370451400000c78eda6a08131d68f4c31d4a76f27bd8fd
+    restart: on-failure
+    environment:
+      POSTGRES_DB: brain
+      POSTGRES_USER: brain
+      POSTGRES_PASSWORD: ${APP_BRAINBRO_POSTGRES_PASSWORD}
+    volumes:
+      - ${APP_DATA_DIR}/data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:8.0-alpine@sha256:5f61955be8ab2ccee9372b84ae4d4da2e2b156f87281e3f218544055e7ee04d4
+    restart: on-failure
+    user: "1000:1000"
+    volumes:
+      - ${APP_DATA_DIR}/data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Semantic search, with the model built into the image. ~600 MB of memory.
+  embedder:
+    image: ghcr.io/thebrainbro/brainbro-embedder:1.0.0@sha256:f4e098808efd2b1eb2057f0af6f5742cbcf845cfda7e794b4483cc82666159f4
+    restart: on-failure
+
+  # One-shot: backup if needed, migrate, ensure the admin. api/worker wait for it.
+  migrate:
+    <<: *app
+    restart: "no"
+    command: ["migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *app
+    restart: on-failure
+    command: ["api"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/api/health/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    <<: *app
+    restart: on-failure
+    command: ["worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy

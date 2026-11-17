@@ -1,0 +1,46 @@
+manifestVersion: 1.1
+id: brainbro-app
+storage:
+  dataRoot: data
+category: files
+name: BrainBro
+version: "1.0.0"
+tagline: A self-hosted second brain. Drop it now, sort it later
+icon: https://raw.githubusercontent.com/TheBrainBro/brainbro-umbrel-app/main/brainbro-app/icon.svg
+description: >-
+  BrainBro is a self-hosted second brain. Capture links, notes, images, files and voice
+  recordings with zero friction: everything lands in the inbox, and organizing it is a
+  separate step.
+
+
+  - Notes in Markdown, linked with [[Title]], edited live from several devices, with their
+  version history
+
+  - Boards: infinite canvases where items are laid out in space
+
+  - Collections that nest, and a graph of how everything ties together
+
+  - Search by words and by meaning, with a model that runs on your Umbrel
+
+  - AI assistants (Claude, ChatGPT and others) read from and write to it through MCP
+
+  - Publish a note as a public page, or a collection as a blog
+
+  - Import an Obsidian vault, export everything as Markdown and files
+
+
+  Sign in with the username and password shown on this page. To add other people, create
+  an invitation link in Settings, Invitations.
+releaseNotes: ""
+developer: BrainBro
+website: https://github.com/TheBrainBro/brainbro
+dependencies: []
+repo: https://github.com/TheBrainBro/brainbro
+support: https://github.com/TheBrainBro/brainbro/issues
+port: 8420
+gallery: []
+path: ""
+defaultUsername: "umbrel"
+deterministicPassword: true
+submitter: BrainBro
+submission: https://github.com/TheBrainBro/brainbro-umbrel-app
